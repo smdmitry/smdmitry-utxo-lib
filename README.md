@@ -1,9 +1,4 @@
 # BitGo UTXO library (bitgo-utxo-lib)
-[![Build Status](https://travis-ci.org/BitGo/bitgo-utxo-lib.png?branch=master)](https://travis-ci.org/BitGo/bitgo-utxo-lib)
-[![NPM](https://img.shields.io/npm/v/bitgo-utxo-lib.svg)](https://www.npmjs.org/package/bitgo-utxo-lib)
-[![Known Vulnerabilities](https://snyk.io/test/github/BitGo/bitgo-utxo-lib/badge.svg?targetFile=package.json)](https://snyk.io/test/github/BitGo/bitgo-utxo-lib?targetFile=package.json)
-
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
 Originally a fork of [bitcoinjs-lib](https://github.com/BitGo/bitcoinjs-lib); we evolved this library to support the transaction building process of different UTXO based coins.
 
@@ -30,13 +25,13 @@ Originally a fork of [bitcoinjs-lib](https://github.com/BitGo/bitcoinjs-lib); we
 
 ## Installation
 ``` bash
-npm install bitgo-utxo-lib
+npm install https://github.com/magnumwallet/mw-bitgo-utxo-lib
 ```
 
 ## Setup
 ### Node.js
 ``` javascript
-var bitGoUTXO = require('bitgo-utxo-lib')
+var bitGoUTXO = require('mw-bitgo-utxo-lib')
 ```
 
 ### Browser
@@ -47,7 +42,7 @@ These steps are advisory only,  and may not be suitable for your application.
 
 For your project, create an `index.js` file
 ``` javascript
-let bitGoUTXO = require('bitgo-utxo-lib')
+let bitGoUTXO = require('mw-bitgo-utxo-lib')
 
 // your code here
 function myFunction () {
