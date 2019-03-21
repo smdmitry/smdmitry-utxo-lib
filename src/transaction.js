@@ -28,6 +28,7 @@ function vectorSize (someVector) {
 // By default, assume is a bitcoin transaction
 function Transaction (network = networks.bitcoin) {
   this.version = 1
+  this.datetime = coins.hasTxDatetime(network) ? new Date().getTime() / 1000 : null;
   this.locktime = 0
   this.ins = []
   this.outs = []
@@ -248,6 +249,10 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
   }
   var tx = new Transaction(network)
   tx.version = readInt32()
+
+  if (coins.hasTxDatetime(network)) {
+    tx.datetime = readInt32();
+  }
 
   if (coins.isZcash(network)) {
     // Split the header into fOverwintered and nVersion
@@ -510,8 +515,13 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
     return this.zcashTransactionByteLength()
   }
 
+  let headerLength = (hasWitnesses ? 10 : 8);
+  if (this.datetime != null) {
+    headerLength += 4;
+  }
+
   return (
-    (hasWitnesses ? 10 : 8) +
+    headerLength +
     varuint.encodingLength(this.ins.length) +
     varuint.encodingLength(this.outs.length) +
     this.ins.reduce(function (sum, input) { return sum + 40 + varSliceSize(input.script) }, 0) +
@@ -523,6 +533,7 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
 Transaction.prototype.clone = function () {
   var newTx = new Transaction(this.network)
   newTx.version = this.version
+  newTx.datetime = this.datetime
   newTx.locktime = this.locktime
   newTx.network = this.network
 
@@ -988,6 +999,9 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
     writeUInt32(this.versionGroupId)
   } else {
     writeInt32(this.version)
+    if (this.datetime != null) {
+        writeInt32(this.datetime)
+    }
   }
 
   var hasWitnesses = __allowWitness && this.hasWitnesses()
@@ -1121,6 +1135,40 @@ Transaction.prototype.setWitness = function (index, witness) {
   typeforce(types.tuple(types.Number, [types.Buffer]), arguments)
 
   this.ins[index].witness = witness
+}
+
+Transaction.prototype.hashForMessageSignature = function (message) {
+    let magicbytes = new Buffer(this.network.textMessagePrefix);
+
+    let BufferWriterVarintBufNum = function(n) {
+        var buf = undefined;
+        if (n < 253) {
+            buf = Buffer.alloc(1);
+            buf.writeUInt8(n, 0);
+        } else if (n < 0x10000) {
+            buf = Buffer.alloc(1 + 2);
+            buf.writeUInt8(253, 0);
+            buf.writeUInt16LE(n, 1);
+        } else if (n < 0x100000000) {
+            buf = Buffer.alloc(1 + 4);
+            buf.writeUInt8(254, 0);
+            buf.writeUInt32LE(n, 1);
+        } else {
+            buf = Buffer.alloc(1 + 8);
+            buf.writeUInt8(255, 0);
+            buf.writeInt32LE(n & -1, 1);
+            buf.writeUInt32LE(Math.floor(n / 0x100000000), 5);
+        }
+        return buf;
+    };
+
+    var prefix1 = BufferWriterVarintBufNum(magicbytes.length);
+    var messageBuffer = new Buffer(message);
+
+    var prefix2 = BufferWriterVarintBufNum(messageBuffer.length);
+    var buf = Buffer.concat([prefix1, magicbytes, prefix2, messageBuffer]);
+
+    return bcrypto.hash256(buf);
 }
 
 module.exports = Transaction

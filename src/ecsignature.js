@@ -85,11 +85,8 @@ ECSignature.prototype.toRSBuffer = function (buffer, offset) {
 }
 
 ECSignature.prototype.toScriptSignature = function (hashType) {
-  var hashTypeMod = hashType & ~0xc0
-  if (hashTypeMod <= 0 || hashTypeMod >= 4) throw new Error('Invalid hashType ' + hashType)
-
   var hashTypeBuffer = Buffer.alloc(1)
-  hashTypeBuffer.writeUInt8(hashType, 0)
+  hashTypeBuffer.writeUInt8(hashType & 0xff, 0)
 
   return Buffer.concat([this.toDER(), hashTypeBuffer])
 }

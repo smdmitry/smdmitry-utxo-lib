@@ -151,10 +151,51 @@ function verify (hash, signature, Q) {
   return v.equals(r)
 }
 
+function toPublicKey (hash, i, r, s) {
+    var e = BigInteger.fromBuffer(hash);
+
+    // A set LSB signifies that the y-coordinate is odd
+    var isYOdd = i & 1;
+
+    // The more significant bit specifies whether we should use the
+    // first or second candidate key.
+    var isSecondKey = i >> 1;
+
+    var n = secp256k1.n;
+    var G = secp256k1.G;
+
+    // 1.1 Let x = r + jn
+    var x = isSecondKey ? r.add(n) : r;
+    var R = secp256k1.pointFromX(isYOdd, x);
+
+    // 1.4 Check that nR is at infinity
+    var nR = R.multiply(n);
+
+    if (!secp256k1.isInfinity(nR)) {
+        throw new Error('nR is not a valid curve point');
+    }
+
+    // Compute -e from e
+    var eNeg = e.negate().mod(n); //var eNeg = e.neg().umod(n);
+    if ((eNeg.signum() == -1 && n.signum() != -1) || (eNeg.signum() != -1 && n.signum() == -1)) {
+        eNeg.add(n);
+    }
+
+    // 1.6.1 Compute Q = r^-1 (sR - eG)
+    // Q = r^-1 (sR + -eG)
+    var rInv = r.modInverse(n).mod(n); //var rInv = r.invm(n);
+
+    //var Q = R.multiplyTwo(s, G, eNeg).mul(rInv);
+    var Q = R.multiply(s).add(G.multiply(eNeg)).multiply(rInv);
+
+    return Q.getEncoded(true);
+};
+
 module.exports = {
   deterministicGenerateK: deterministicGenerateK,
   sign: sign,
   verify: verify,
+  toPublicKey: toPublicKey,
 
   // TODO: remove
   __curve: secp256k1

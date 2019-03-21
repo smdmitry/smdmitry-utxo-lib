@@ -15,6 +15,7 @@ var P2SH = SIGNABLE.concat([btemplates.types.P2WPKH, btemplates.types.P2WSH])
 var ECPair = require('./ecpair')
 var ECSignature = require('./ecsignature')
 var Transaction = require('./transaction')
+let ecdsa = require('../src/ecdsa');
 
 var debug = require('debug')('bitgo:utxolib:txbuilder')
 
@@ -761,7 +762,7 @@ function canSign (input) {
     )
 }
 
-TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashType, witnessValue, witnessScript) {
+TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashType, witnessValue, witnessScript, hashForWitness) {
   debug('Signing transaction: (input: %d, hashType: %d, witnessVal: %s, witnessScript: %j)', vin, hashType, witnessValue, witnessScript)
   debug('Transaction Builder network: %j', this.network)
 
@@ -805,7 +806,7 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
     signatureHash = this.tx.hashForZcashSignature(vin, input.signScript, witnessValue, hashType)
     debug('Calculated ZEC sighash (%s)', signatureHash.toString('hex'))
   } else {
-    if (input.witness) {
+    if (input.witness || hashForWitness) {
       signatureHash = this.tx.hashForWitnessV0(vin, input.signScript, witnessValue, hashType)
       debug('Calculated witnessv0 sighash (%s)', signatureHash.toString('hex'))
     } else {
@@ -831,6 +832,40 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
   })
 
   if (!signed) throw new Error('Key pair cannot sign for this input')
+}
+
+TransactionBuilder.prototype.signMessage = function (message, keyPair) {
+    var kpPubKey = keyPair.publicKey || keyPair.getPublicKeyBuffer();
+    kpPubKey = kpPubKey.toString('hex');
+
+    debug('Signing message: (message: %s, pubkey: %s)', message, kpPubKey)
+    debug('Signing message network: %j', this.network)
+
+    if (keyPair.network && keyPair.network !== this.network) throw new TypeError('Inconsistent network')
+
+    let signatureHash = this.tx.hashForMessageSignature(message);
+    debug('Calculated message hash (%s)', signatureHash.toString('hex'))
+
+    let signature = keyPair.sign(signatureHash)
+    if (Buffer.isBuffer(signature)) signature = ECSignature.fromRSBuffer(signature)
+
+    debug('Produced signature (r: %s, s: %s)', signature.r.toString(), signature.s.toString())
+
+    let signstr = '';
+    for (let i = 0; i <= 4; i++) {
+        signstr = signature.toCompact(i, true).toString('base64');
+
+        ecdsa.hashbuf = signatureHash;
+        ecdsa.sig = signature;
+        let publicKey = ecdsa.toPublicKey(signatureHash, i, signature.r, signature.s);
+
+        if (publicKey.toString('hex') === kpPubKey) {
+            debug('Signature (%s)', signstr);
+            return signstr;
+        }
+    }
+
+    return false;
 }
 
 function signatureHashType (buffer) {
