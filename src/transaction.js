@@ -29,6 +29,7 @@ function vectorSize (someVector) {
 function Transaction (network = networks.bitcoin) {
   this.version = 1
   this.datetime = coins.hasTxDatetime(network) ? new Date().getTime() / 1000 : null;
+  this.blockHash = coins.hasTxBlockhash(network) ? new Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex') : null;
   this.locktime = 0
   this.ins = []
   this.outs = []
@@ -252,6 +253,10 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
 
   if (coins.hasTxDatetime(network)) {
     tx.datetime = readInt32();
+  }
+
+  if (tx.version === 12 && coins.hasTxBlockhash(network)) {
+    tx.blockHash = readSlice(32);
   }
 
   if (coins.isZcash(network)) {
@@ -522,6 +527,7 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
 
   return (
     headerLength +
+    ((this.version === 12 && this.blockHash != null) ? 32 : 0) +
     varuint.encodingLength(this.ins.length) +
     varuint.encodingLength(this.outs.length) +
     this.ins.reduce(function (sum, input) { return sum + 40 + varSliceSize(input.script) }, 0) +
@@ -534,6 +540,7 @@ Transaction.prototype.clone = function () {
   var newTx = new Transaction(this.network)
   newTx.version = this.version
   newTx.datetime = this.datetime
+  newTx.blockHash = this.blockHash
   newTx.locktime = this.locktime
   newTx.network = this.network
 
@@ -1001,6 +1008,9 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
     writeInt32(this.version)
     if (this.datetime != null) {
         writeInt32(this.datetime)
+    }
+    if (this.version === 12 && this.blockHash !== null) {
+        writeSlice(this.blockHash)
     }
   }
 

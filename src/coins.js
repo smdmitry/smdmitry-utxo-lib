@@ -44,6 +44,10 @@ coins.hasTxDatetime = function (network) {
   return network.txdatetime;
 }
 
+coins.hasTxBlockhash = function (network) {
+    return network.txblockhash;
+}
+
 coins.isValidCoin = typeforce.oneOf(
   coins.isBitcoin,
   coins.isBitcoinCash,
@@ -52,7 +56,8 @@ coins.isValidCoin = typeforce.oneOf(
   coins.isLitecoin,
   coins.isZcash,
   coins.isZKSnark,
-  coins.hasTxDatetime
+  coins.hasTxDatetime,
+  coins.hasTxBlockhash
 )
 
 module.exports = coins

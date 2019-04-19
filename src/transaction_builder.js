@@ -538,6 +538,10 @@ TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
   this.tx.versionGroupId = versionGroupId
 }
 
+TransactionBuilder.prototype.setBlockHash = function (blockHash) {
+    this.tx.blockHash = coins.hasTxBlockhash(this.network) ? Buffer.from(blockHash, 'hex') : null;
+}
+
 TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
   if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
