@@ -29,7 +29,7 @@ function vectorSize (someVector) {
 function Transaction (network = networks.bitcoin) {
   this.version = 1
   this.datetime = coins.hasTxDatetime(network) ? new Date().getTime() / 1000 : null;
-  this.blockHash = coins.hasTxBlockhash(network) ? new Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex') : null;
+  this.blockHash = coins.hasTxBlockhash(network) ? Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex') : null;
   this.locktime = 0
   this.ins = []
   this.outs = []
