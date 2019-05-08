@@ -88,7 +88,7 @@ ECPair.fromPrivateKeyBuffer = function (buffer, network) {
 
 ECPair.fromWIF = function (string, network) {
   var decoded = false;
-  if (network && network.coin == 'grs') {
+  if (network && network.coin.toLowerCase() == 'grs') {
     decoded = wifgrs.decode(string)
   } else {
     decoded = wif.decode(string)
@@ -175,7 +175,7 @@ ECPair.prototype.sign = function (hash) {
 ECPair.prototype.toWIF = function () {
   if (!this.d) throw new Error('Missing private key')
 
-  if (this.network.coin == 'grs') {
+  if (this.network.coin.toLowerCase() == 'grs') {
     return wifgrs.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
   }
 

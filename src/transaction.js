@@ -1224,7 +1224,7 @@ Transaction.prototype.hashForMessageSignature = function (message) {
     var prefix2 = BufferWriterVarintBufNum(messageBuffer.length);
     var buf = Buffer.concat([prefix1, magicbytes, prefix2, messageBuffer]);
 
-    return bcrypto.hash256(buf);
+    return this.network.hashFunctions.transaction(buf);
 }
 
 module.exports = Transaction
