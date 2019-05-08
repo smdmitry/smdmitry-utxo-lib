@@ -592,17 +592,30 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
   txb.setLockTime(transaction.locktime)
 
   if (coins.isZcash(txbNetwork)) {
-    // Copy Zcash overwinter fields. If the transaction builder is not for Zcash, they will be omitted
+    // Copy Zcash overwinter fields. Omitted if the transaction builder is not for Zcash.
     if (txb.tx.isOverwinterCompatible()) {
       txb.setVersionGroupId(transaction.versionGroupId)
       txb.setExpiryHeight(transaction.expiryHeight)
     }
+
     // We don't support protected transactions but we copy the joinsplits for consistency. However, the transaction
     // builder will fail when we try to sign one of these transactions
     if (txb.tx.supportsJoinSplits()) {
       txb.setJoinSplits(transaction)
     }
   }
+
+  // Copy Dash special transaction fields. Omitted if the transaction builder is not for Dash.
+  if (coins.isDash(txbNetwork)) {
+    typeforce(types.UInt16, transaction.type)
+    txb.tx.type = transaction.type
+
+    if (txb.tx.versionSupportsDashSpecialTransactions()) {
+      typeforce(types.Buffer, transaction.extraPayload)
+      txb.tx.extraPayload = transaction.extraPayload
+    }
+  }
+
   // Copy outputs (done first to avoid signature invalidation)
   transaction.outs.forEach(function (txOut) {
     txb.addOutput(txOut.script, txOut.value)
@@ -647,22 +660,38 @@ TransactionBuilder.prototype.addInput = function (txHash, vout, sequence, prevOu
     txHash = txHash.getHash()
   }
 
-  return this.__addInputUnsafe(txHash, vout, {
-    sequence: sequence,
-    prevOutScript: prevOutScript,
-    value: value
-  })
+  if (Transaction.isCoinbaseHash(txHash)) {
+    return this.__addInputUnsafe(txHash, vout, {
+      sequence: sequence,
+      scriptSig: prevOutScript,
+    })
+  }
+  else {
+    return this.__addInputUnsafe(txHash, vout, {
+      sequence: sequence,
+      prevOutScript: prevOutScript,
+      value: value
+    })
+  }
 }
 
 TransactionBuilder.prototype.__addInputUnsafe = function (txHash, vout, options) {
+  var input = {}
+
   if (Transaction.isCoinbaseHash(txHash)) {
-    throw new Error('coinbase inputs not supported')
+    var vin = this.tx.addInput(txHash, vout, options.sequence, options.scriptSig)
+    input = {
+      pubKeys: [],
+      signatures: [],
+      signScript: options.scriptSig,
+    }
+    this.inputs[vin] = input
+    //throw new Error('coinbase inputs not supported')
+    return 0;
   }
 
   var prevTxOut = txHash.toString('hex') + ':' + vout
   if (this.prevTxMap[prevTxOut] !== undefined) throw new Error('Duplicate TxOut: ' + prevTxOut)
-
-  var input = {}
 
   // derive what we can from the scriptSig
   if (options.script !== undefined) {
@@ -726,6 +755,11 @@ TransactionBuilder.prototype.__build = function (allowIncomplete) {
   }
 
   var tx = this.tx.clone()
+  if (Transaction.isCoinbaseHash(tx.ins[0].hash))
+  {
+    return tx;
+  }
+
   // Create script signatures from inputs
   this.inputs.forEach(function (input, i) {
     var scriptType = input.witnessScriptType || input.redeemScriptType || input.prevOutType
