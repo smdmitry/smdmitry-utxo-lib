@@ -5,6 +5,7 @@ var randomBytes = require('randombytes')
 var typeforce = require('typeforce')
 var types = require('./types')
 var wif = require('wif')
+var wifgrs = require('wifgrs')
 
 var NETWORKS = require('./networks')
 var BigInteger = require('bigi')
@@ -86,7 +87,12 @@ ECPair.fromPrivateKeyBuffer = function (buffer, network) {
 }
 
 ECPair.fromWIF = function (string, network) {
-  var decoded = wif.decode(string)
+  var decoded = false;
+  if (network && network.coin == 'grs') {
+    decoded = wifgrs.decode(string)
+  } else {
+    decoded = wif.decode(string)
+  }
   var version = decoded.version
 
   // list of networks?
@@ -168,6 +174,10 @@ ECPair.prototype.sign = function (hash) {
 
 ECPair.prototype.toWIF = function () {
   if (!this.d) throw new Error('Missing private key')
+
+  if (this.network.coin == 'grs') {
+    return wifgrs.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
+  }
 
   return wif.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
 }
