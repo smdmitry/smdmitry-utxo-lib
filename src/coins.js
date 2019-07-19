@@ -49,6 +49,10 @@ coins.hasTxDatetime = function (network) {
   return network.txdatetime;
 }
 
+coins.hasExtraPayload = function (network) {
+  return network.txextrapayload || coins.isDash(network);
+}
+
 coins.hasTxBlockhash = function (network) {
     return network.txblockhash;
 }

@@ -48,7 +48,7 @@ function Transaction (network = networks.bitcoin) {
     this.vShieldedOutput = []
     this.bindingSig = 0
   }
-  if (coins.isDash(network)) {
+  if (coins.hasExtraPayload(network)) {
     // Dash version = 3
     this.type = 0
     this.extraPayload = Buffer.alloc(0)
@@ -368,7 +368,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     }
   }
 
-  if (tx.isDashSpecialTransaction()) {
+  if (tx.hasExtraPayload()) {
     tx.extraPayload = readVarSlice()
   }
 
@@ -410,6 +410,10 @@ Transaction.prototype.versionSupportsDashSpecialTransactions = function () {
 
 Transaction.prototype.isDashSpecialTransaction = function () {
   return this.versionSupportsDashSpecialTransactions() && this.type !== Transaction.DASH_NORMAL
+}
+
+Transaction.prototype.hasExtraPayload = function () {
+  return this.isDashSpecialTransaction() || coins.hasExtraPayload(this.network)
 }
 
 Transaction.prototype.isCoinbase = function () {
@@ -564,7 +568,7 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
     varuint.encodingLength(this.outs.length) +
     this.ins.reduce(function (sum, input) { return sum + 40 + varSliceSize(input.script) }, 0) +
     this.outs.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0) +
-    (this.isDashSpecialTransaction() ? varSliceSize(this.extraPayload) : 0) +
+    (this.hasExtraPayload() ? varSliceSize(this.extraPayload) : 0) +
     (hasWitnesses ? this.ins.reduce(function (sum, input) { return sum + vectorSize(input.witness) }, 0) : 0)
   )
 }
@@ -577,7 +581,7 @@ Transaction.prototype.clone = function () {
   newTx.locktime = this.locktime
   newTx.network = this.network
 
-  if (coins.isDash(this.network)) {
+  if (coins.hasExtraPayload(this.network)) {
     newTx.type = this.type
     newTx.extraPayload = this.extraPayload
   }
@@ -1167,7 +1171,7 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
     writeSlice(this.bindingSig)
   }
 
-  if (this.isDashSpecialTransaction()) {
+  if (this.hasExtraPayload()) {
     writeVarSlice(this.extraPayload)
   }
 

@@ -606,7 +606,7 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
   }
 
   // Copy Dash special transaction fields. Omitted if the transaction builder is not for Dash.
-  if (coins.isDash(txbNetwork)) {
+  if (coins.hasExtraPayload(txbNetwork)) {
     typeforce(types.UInt16, transaction.type)
     txb.tx.type = transaction.type
 
