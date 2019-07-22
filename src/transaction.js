@@ -413,7 +413,7 @@ Transaction.prototype.isDashSpecialTransaction = function () {
 }
 
 Transaction.prototype.hasExtraPayload = function () {
-  return this.isDashSpecialTransaction() || coins.hasExtraPayload(this.network)
+  return coins.isDash(this.network) ? this.isDashSpecialTransaction() : coins.hasExtraPayload(this.network)
 }
 
 Transaction.prototype.isCoinbase = function () {

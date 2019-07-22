@@ -50,7 +50,7 @@ coins.hasTxDatetime = function (network) {
 }
 
 coins.hasExtraPayload = function (network) {
-  return network.txextrapayload || coins.isDash(network);
+  return network.txextrapayload || this.isDash(network);
 }
 
 coins.hasTxBlockhash = function (network) {
@@ -70,8 +70,9 @@ coins.isValidCoin = typeforce.oneOf(
   coins.isZcash,
   coins.isZKSnark,
   coins.hasTxDatetime,
+  coins.hasExtraPayload,
   coins.hasTxBlockhash,
-  coins.isGroestlcoin
+  coins.isGroestlcoin,
 )
 
 module.exports = coins
