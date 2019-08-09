@@ -364,14 +364,25 @@ function prepareInput (input, kpPubKey, redeemScript, witnessValue, witnessScrip
       throw new Error('PrevOutScript is ' + input.prevOutType + ', requires redeemScript')
     }
 
-    prevOutType = input.prevOutType
-    prevOutScript = input.prevOutScript
-    expanded = expandOutput(input.prevOutScript, input.prevOutType, kpPubKey)
-    if (!expanded.pubKeys) return
+    if (input.prevOutScript.toString('hex').indexOf('c66376a914') === 0) {
+      // Crutch for NAV coin staking withdrawal
+      prevOutScript = btemplates.pubKeyHash.output.encode(bcrypto.hash160(kpPubKey))
+      expanded = expandOutput(prevOutScript, scriptTypes.P2PKH, kpPubKey)
 
-    witness = (input.prevOutType === scriptTypes.P2WPKH)
-    signType = prevOutType
-    signScript = prevOutScript
+      prevOutType = scriptTypes.P2PKH
+      witness = false
+      signType = prevOutType
+      signScript = input.prevOutScript
+    } else {
+      prevOutType = input.prevOutType
+      prevOutScript = input.prevOutScript
+      expanded = expandOutput(input.prevOutScript, input.prevOutType, kpPubKey)
+      if (!expanded.pubKeys) return
+
+      witness = (input.prevOutType === scriptTypes.P2WPKH)
+      signType = prevOutType
+      signScript = prevOutScript
+    }
   } else {
     prevOutScript = btemplates.pubKeyHash.output.encode(bcrypto.hash160(kpPubKey))
     expanded = expandOutput(prevOutScript, scriptTypes.P2PKH, kpPubKey)
