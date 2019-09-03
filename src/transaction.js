@@ -27,7 +27,7 @@ function vectorSize (someVector) {
 
 function Transaction (network = networks.bitcoin) {
   this.version = 1
-  this.datetime = coins.hasTxDatetime(network) ? new Date().getTime() / 1000 : null;
+  this.datetime = coins.hasTxDatetime(network) ? Math.floor(new Date().getTime() / 1000) : null;
   this.blockHash = coins.hasTxBlockhash(network) ? Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex') : null;
   this.locktime = 0
   this.ins = []
@@ -264,7 +264,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
   tx.version = readInt32()
 
   if (coins.hasTxDatetime(network)) {
-    tx.datetime = readInt32();
+    tx.datetime = readUInt32();
   }
 
   if (tx.version === 12 && coins.hasTxBlockhash(network)) {
@@ -413,7 +413,7 @@ Transaction.prototype.isDashSpecialTransaction = function () {
 }
 
 Transaction.prototype.hasExtraPayload = function () {
-  return this.isDashSpecialTransaction() || coins.hasExtraPayload(this.network)
+  return coins.isDash(this.network) ? this.isDashSpecialTransaction() : coins.hasExtraPayload(this.network)
 }
 
 Transaction.prototype.isCoinbase = function () {
@@ -1053,7 +1053,7 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
   } else {
     writeInt32(this.version)
     if (this.datetime != null) {
-        writeInt32(this.datetime)
+        writeUInt32(this.datetime)
     }
     if (this.version === 12 && this.blockHash !== null) {
         writeSlice(this.blockHash)
