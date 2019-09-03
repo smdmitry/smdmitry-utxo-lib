@@ -88,8 +88,12 @@ ECPair.fromPrivateKeyBuffer = function (buffer, network) {
 
 ECPair.fromWIF = function (string, network) {
   var decoded = false;
-  if (network && network.coin.toLowerCase() == 'grs') {
-    decoded = wifgrs.decode(string)
+  if (network) {
+    if (network.coin.toLowerCase() == 'grs') {
+      decoded = wifgrs.decode(string)
+    } else {
+      decoded = wif.decode(string, undefined, network.wif > 0xff ? 2 : 1)
+    }
   } else {
     decoded = wif.decode(string)
   }
