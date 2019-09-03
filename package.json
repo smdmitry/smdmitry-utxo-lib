@@ -1,6 +1,6 @@
 {
   "name": "mw-bitgo-utxo-lib",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./src/index.js",
   "engines": {
@@ -50,7 +50,7 @@
     "safe-buffer": "^5.0.1",
     "typeforce": "^1.11.3",
     "varuint-bitcoin": "^1.0.4",
-    "wif": "^2.0.1",
+    "wif": "git+https://github.com/magnumwallet/wif.git",
     "wifgrs": "git+https://github.com/Groestlcoin/wifgrs.git"
   },
   "devDependencies": {
