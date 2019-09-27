@@ -212,6 +212,18 @@ module.exports = {
     coin: coins.PPC,
     hashFunctions: hashFunctions
   },
+  lightningbitcoin: {
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 0x00,
+    scriptHash: 0x05,
+    wif: 0x80,
+    coin: coins.LBTC,
+    hashFunctions: hashFunctions
+  },
   groestlcoin: {
     messagePrefix: '\x1cGroestlCoin Signed Message:\n',
     bech32: 'grs',

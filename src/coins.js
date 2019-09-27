@@ -10,6 +10,7 @@ const coins = {
   PPC: 'ppc',
   ZEC: 'zec',
   DASH: 'dash',
+  LBTC: 'lbtc',
   GRS: 'grs'
 }
 
@@ -41,6 +42,10 @@ coins.isZcash = function (network) {
   return typeforce.value(coins.ZEC)(network.coin) || this.isZKSnark(network);
 }
 
+coins.isLightningBitcoinLBTC = function (network) {
+    return typeforce.value(coins.LBTC)(network.coin)
+}
+
 coins.isZKSnark = function (network) {
   return network.consensusBranchId;
 }
@@ -69,6 +74,7 @@ coins.isValidCoin = typeforce.oneOf(
   coins.isLitecoin,
   coins.isZcash,
   coins.isZKSnark,
+  coins.isLightningBitcoinLBTC,
   coins.hasTxDatetime,
   coins.hasExtraPayload,
   coins.hasTxBlockhash,

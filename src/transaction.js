@@ -738,10 +738,15 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
   }
 
   // serialize and hash
-  var buffer = Buffer.allocUnsafe(txTmp.__byteLength(false) + 4)
-  buffer.writeInt32LE(hashType, buffer.length - 4)
+  if (coins.isLightningBitcoinLBTC(this.network) && txTmp.version >= 0xff02) {
+    var buffer = Buffer.allocUnsafe(txTmp.__byteLength(false) + 8)
+    buffer.writeInt32LE(hashType, buffer.length - 8)
+    buffer.writeInt32LE(0x4354424c, buffer.length - 4)
+  } else {
+    var buffer = Buffer.allocUnsafe(txTmp.__byteLength(false) + 4)
+    buffer.writeInt32LE(hashType, buffer.length - 4)
+  }
   txTmp.__toBuffer(buffer, 0, false)
-
   return this.network.hashFunctions.transaction(buffer)
 }
 
