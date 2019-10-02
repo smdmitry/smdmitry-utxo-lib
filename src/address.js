@@ -7,6 +7,7 @@ var networks = require('./networks')
 var typeforce = require('typeforce')
 var types = require('./types')
 var bs58checkBase = require('bs58check/base')
+var multichain = require('./multichain')
 
 function fromBase58Check (address, network) {
   network = network || networks.bitcoin
@@ -38,6 +39,11 @@ function fromBech32 (address) {
 
 function toBase58Check (hash, version, network) {
   network = network || networks.bitcoin
+
+  if (network.addressChecksum) {
+    return multichain.getAddressFromPKH(hash, version, network.addressChecksum)
+  }
+
   typeforce(types.tuple(types.Hash160bit, types.UInt16), arguments)
 
   // Zcash adds an extra prefix resulting in a bigger (22 bytes) payload. We identify them Zcash by checking if the
@@ -76,7 +82,11 @@ function toOutputScript (address, network) {
 
   var decode
   try {
-    decode = fromBase58Check(address, network)
+    if (network.addressChecksum) {
+      decode = multichain.parseAddress(address, [network.pubKeyHash, network.scriptHash], network.addressChecksum)
+    } else {
+      decode = fromBase58Check(address, network)
+    }
   } catch (e) {}
 
   if (decode) {

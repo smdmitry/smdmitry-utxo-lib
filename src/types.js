@@ -21,7 +21,7 @@ var ECPoint = typeforce.quacksLike('Point')
 
 // exposed, external API
 var ECSignature = typeforce.compile({ r: BigInt, s: BigInt })
-var networkVersion = typeforce.oneOf(typeforce.UInt8, typeforce.UInt16)
+var networkVersion = typeforce.oneOf(typeforce.UInt8, typeforce.UInt16, typeforce.UInt32)
 var Network = typeforce.compile({
   messagePrefix: typeforce.oneOf(typeforce.Buffer, typeforce.String),
   bip32: {
@@ -30,7 +30,7 @@ var Network = typeforce.compile({
   },
   pubKeyHash: networkVersion,
   scriptHash: networkVersion,
-  wif: typeforce.oneOf(typeforce.UInt8, typeforce.UInt16)
+  wif: networkVersion
 })
 
 // extend typeforce types with ours

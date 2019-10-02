@@ -15,6 +15,7 @@ var curve = ecurve.getCurveByName('secp256k1')
 var secp256k1 = ecdsa.__curve
 
 var fastcurve = require('./fastcurve')
+var multichain = require('./multichain')
 
 function ECPair (d, Q, options) {
   if (options) {
@@ -88,8 +89,11 @@ ECPair.fromPrivateKeyBuffer = function (buffer, network) {
 
 ECPair.fromWIF = function (string, network) {
   var decoded = false;
+
   if (network) {
-    if (network.coin.toLowerCase() == 'grs') {
+    if (network.addressChecksum) {
+      decoded = multichain.fromWIF(string, network.wif, network.addressChecksum)
+    } else if (network.coin.toLowerCase() == 'grs') {
       decoded = wifgrs.decode(string)
     } else {
       decoded = wif.decode(string, undefined, network.wif > 0xff ? 2 : 1)
@@ -178,6 +182,10 @@ ECPair.prototype.sign = function (hash) {
 
 ECPair.prototype.toWIF = function () {
   if (!this.d) throw new Error('Missing private key')
+
+  if (this.network.addressChecksum) {
+    return multichain.toWIF(this.d.toBuffer(32), this.compressed, this.network.wif, this.network.addressChecksum)
+  }
 
   if (this.network.coin.toLowerCase() == 'grs') {
     return wifgrs.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
