@@ -739,7 +739,7 @@ TransactionBuilder.prototype.__addInputUnsafe = function (txHash, vout, options)
   return vin
 }
 
-TransactionBuilder.prototype.addOutput = function (scriptPubKey, value) {
+TransactionBuilder.prototype.addOutput = function (scriptPubKey, value, attachment = false) {
   if (!this.__canModifyOutputs()) {
     throw new Error('No, this would invalidate signatures')
   }
@@ -749,7 +749,7 @@ TransactionBuilder.prototype.addOutput = function (scriptPubKey, value) {
     scriptPubKey = baddress.toOutputScript(scriptPubKey, this.network)
   }
 
-  return this.tx.addOutput(scriptPubKey, value)
+  return this.tx.addOutput(scriptPubKey, value, attachment)
 }
 
 TransactionBuilder.prototype.build = function () {

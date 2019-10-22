@@ -11,7 +11,8 @@ const coins = {
   ZEC: 'zec',
   DASH: 'dash',
   LBTC: 'lbtc',
-  GRS: 'grs'
+  GRS: 'grs',
+  ETP: 'etp',
 }
 
 coins.isBitcoin = function (network) {
@@ -66,6 +67,10 @@ coins.isGroestlcoin = function (network) {
   return typeforce.value(coins.GRS)(network.coin)
 }
 
+coins.isETPNetwork = function (network) {
+    return typeforce.value(coins.ETP)(network.coin)
+}
+
 coins.isValidCoin = typeforce.oneOf(
   coins.isBitcoin,
   coins.isBitcoinCash,
@@ -79,6 +84,7 @@ coins.isValidCoin = typeforce.oneOf(
   coins.hasExtraPayload,
   coins.hasTxBlockhash,
   coins.isGroestlcoin,
+  coins.isETPNetwork,
 )
 
 module.exports = coins

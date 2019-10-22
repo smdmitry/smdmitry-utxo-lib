@@ -316,10 +316,16 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
 
   var voutLen = readVarInt()
   for (i = 0; i < voutLen; ++i) {
-    tx.outs.push({
-      value: readUInt64(),
-      script: readVarSlice()
-    })
+    let outRecord = {
+        value: readUInt64(),
+        script: readVarSlice()
+    }
+    if (coins.isETPNetwork(network)) {
+        outRecord.attachment = {version: readUInt32(), type: readUInt32()}
+        outRecord.attachmentBytes = buffer.slice(offset - 8, 8)
+    }
+
+    tx.outs.push(outRecord)
   }
 
   if (hasWitnesses) {
@@ -442,12 +448,22 @@ Transaction.prototype.addInput = function (hash, index, sequence, scriptSig) {
   }) - 1)
 }
 
-Transaction.prototype.addOutput = function (scriptPubKey, value) {
+Transaction.prototype.addOutput = function (scriptPubKey, value, attachment = false) {
   typeforce(types.tuple(types.Buffer, types.Satoshi), arguments)
+
+  let attachmentBytes = Buffer.alloc(0);
+  if (attachment) {
+    attachmentBytes = Buffer.alloc(8);
+    attachmentBytes.writeUInt32BE(0, 0);
+    attachmentBytes.writeUInt8(attachment.version, 0);
+    attachmentBytes.writeUInt32BE(attachment.type, 4);
+  }
 
   // Add the output and return the output's index
   return (this.outs.push({
     script: scriptPubKey,
+    attachment: attachment,
+    attachmentBytes: attachmentBytes,
     value: value
   }) - 1)
 }
@@ -567,7 +583,7 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
     varuint.encodingLength(this.ins.length) +
     varuint.encodingLength(this.outs.length) +
     this.ins.reduce(function (sum, input) { return sum + 40 + varSliceSize(input.script) }, 0) +
-    this.outs.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0) +
+    this.outs.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) + (output.attachment ? output.attachmentBytes.length : 0) }, 0) +
     (this.hasExtraPayload() ? varSliceSize(this.extraPayload) : 0) +
     (hasWitnesses ? this.ins.reduce(function (sum, input) { return sum + vectorSize(input.witness) }, 0) : 0)
   )
@@ -608,7 +624,9 @@ Transaction.prototype.clone = function () {
   newTx.outs = this.outs.map(function (txOut) {
     return {
       script: txOut.script,
-      value: txOut.value
+      value: txOut.value,
+      attachment: txOut.attachment,
+      attachmentBytes: txOut.attachmentBytes
     }
   })
   if (this.isSaplingCompatible()) {
@@ -1090,6 +1108,9 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
     }
 
     writeVarSlice(txOut.script)
+    if (txOut.attachment && txOut.attachmentBytes.length) {
+      writeSlice(txOut.attachmentBytes)
+    }
   })
 
   if (hasWitnesses) {
