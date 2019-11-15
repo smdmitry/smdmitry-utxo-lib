@@ -11,6 +11,103 @@ var types = require('./types')
 var varuint = require('varuint-bitcoin')
 var blake2b = require('blake2b')
 
+// ---
+
+let ETPConst = {
+    ATTACHMENT: {
+        TYPE: {
+            ETP_TRANSFER: 0,
+            MST: 2,
+            MESSAGE: 3,
+            AVATAR: 4,
+            CERT: 5,
+            MIT: 6,
+            COINSTAKE: 4294967295
+        },
+        VERSION: {
+            DEFAULT: 1,
+            DID: 207
+        }
+    },
+
+    MST: {
+        STATUS: {
+            REGISTER: 1,
+            TRANSFER: 2
+        }
+    },
+
+    MIT: {
+        STATUS: {
+            REGISTER: 1,
+            TRANSFER: 2
+        }
+    },
+
+    CERT: {
+        TYPE: {
+            ISSUE: 1,
+            DOMAIN: 2,
+            NAMING: 3,
+            MINING: 0x60000000 + 4,
+        },
+        STATUS: {
+            DEFAULT: 0,
+            ISSUE: 1,
+            TRANSFER: 2,
+            AUTOISSUE: 3
+        }
+    },
+
+    AVATAR: {
+        STATUS: {
+            REGISTER: 1,
+            TRANSFER: 2
+        }
+    },
+
+    FEE: {
+        DEFAULT: 10000,
+        MST_REGISTER: 1000000000,
+        AVATAR_REGISTER: 100000000,
+        SWAP_FEE: 100000000
+    },
+
+    CELEBRITIES: {
+        BOUNTY: {
+            mainnet: {
+                address: "MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh",
+                symbol: "developer-community"
+            },
+            testnet: {
+                address: "tBELxsiiaMVGQcY2Apf7hmzAaipD4YWTTj",
+                symbol: "yoyo"
+            }
+        }
+    },
+
+    UTXO: {
+        MAX_COUNT: 600,
+    }
+};
+function encodeString(buffer, str, offset, encoding = 'utf-8') {
+    var payload = Buffer.from(str, encoding);
+    offset += bufferutils.writeVarInt(buffer, payload.length, offset);
+    return payload.copy(buffer, offset) + 1;
+}
+function encodeAttachmentMSTTransfer(buffer, offset, symbol, quantity) {
+    if (symbol == undefined)
+        throw Error('Specify output asset');
+    if (quantity == undefined)
+        throw Error('Specify output quanity');
+    offset = buffer.writeUInt32LE(ETPConst.MST.STATUS.TRANSFER, offset);
+    offset += encodeString(buffer, symbol, offset);
+    offset = bufferutils.writeUInt64LE(buffer, quantity, offset);
+    return offset;
+};
+
+// ---
+
 function varSliceSize (someScript) {
   var length = someScript.length
 
@@ -453,10 +550,39 @@ Transaction.prototype.addOutput = function (scriptPubKey, value, attachment = fa
 
   let attachmentBytes = Buffer.alloc(0);
   if (attachment) {
-    attachmentBytes = Buffer.alloc(8);
-    attachmentBytes.writeUInt32BE(0, 0);
-    attachmentBytes.writeUInt8(attachment.version, 0);
-    attachmentBytes.writeUInt32BE(attachment.type, 4);
+    let offset = 0;
+    let buffer = Buffer.allocUnsafe(1000000);
+
+    offset = buffer.writeUInt32LE(attachment.version, 0);
+    offset = buffer.writeUInt32LE(attachment.type, 4);
+    if (attachment.version === ETPConst.ATTACHMENT.VERSION.DID) {
+      offset += encodeString(buffer, attachment.to_did, offset);
+      offset += encodeString(buffer, attachment.from_did, offset);
+    }
+
+  switch (attachment.type) {
+      case ETPConst.ATTACHMENT.TYPE.ETP_TRANSFER:
+          break;
+      case ETPConst.ATTACHMENT.TYPE.MST:
+          switch (attachment.status) {
+              case ETPConst.MST.STATUS.TRANSFER:
+                  offset = encodeAttachmentMSTTransfer(buffer, offset, attachment.symbol, attachment.quantity);
+                  break;
+              default:
+                  throw Error("Asset status unknown");
+          }
+          break;
+      default:
+          throw Error("What kind of an output is that?!");
+  }
+
+    attachmentBytes = buffer.slice(0, offset);
+
+    //attachmentBytes = Buffer.alloc(8);
+    //attachmentBytes.writeUInt32BE(0, 0);
+    //attachmentBytes.writeUInt8(attachment.version, 0);
+    //attachmentBytes.writeUInt32LE(attachment.version, 0);
+    //attachmentBytes.writeUInt32BE(attachment.type, 4);
   }
 
   // Add the output and return the output's index
