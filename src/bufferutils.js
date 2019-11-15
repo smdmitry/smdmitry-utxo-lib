@@ -51,6 +51,12 @@ function writeVarInt (buffer, number, offset) {
   return varuint.encode.bytes
 }
 
+function encodeString(buffer, str, offset, encoding = 'utf-8') {
+    var payload = Buffer.from(str, encoding);
+    offset += writeVarInt(buffer, payload.length, offset);
+    return payload.copy(buffer, offset) + 1;
+}
+
 module.exports = {
   pushDataSize: pushdata.encodingLength,
   readPushDataInt: pushdata.decode,
@@ -61,5 +67,6 @@ module.exports = {
   varIntSize: varuint.encodingLength,
   writePushDataInt: pushdata.encode,
   writeUInt64LE: writeUInt64LE,
-  writeVarInt: writeVarInt
+  writeVarInt: writeVarInt,
+  encodeString: encodeString
 }
