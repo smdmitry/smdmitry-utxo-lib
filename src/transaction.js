@@ -94,6 +94,8 @@ Transaction.DASH_PROVIDER_UPDATE_REVOKE = 4
 Transaction.DASH_COINBASE = 5
 Transaction.DASH_QUORUM_COMMITMENT = 6
 
+Transaction.metaverse = metaverse;
+
 Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStrict) {
   var offset = 0
   function readSlice (n) {
