@@ -146,7 +146,7 @@ ECPair.makeRandom = function (options) {
 }
 
 ECPair.prototype.getAddress = function () {
-  let hashFunc = network.hashFunctions.address_hash160 ? network.hashFunctions.address_hash160 : bcrypto.hash160
+  let hashFunc = this.network.hashFunctions.address_hash160 ? this.network.hashFunctions.address_hash160 : bcrypto.hash160
   return baddress.toBase58Check(hashFunc(this.getPublicKeyBuffer()), this.getNetwork().pubKeyHash, this.network)
 }
 
