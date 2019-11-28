@@ -6,6 +6,7 @@ var typeforce = require('typeforce')
 var types = require('./types')
 var wif = require('wif')
 var wifgrs = require('wifgrs')
+var wifblake = require('./wifblake')
 
 var NETWORKS = require('./networks')
 var BigInteger = require('bigi')
@@ -95,6 +96,8 @@ ECPair.fromWIF = function (string, network) {
       decoded = multichain.fromWIF(string, network.wif, network.addressChecksum)
     } else if (network.coin.toLowerCase() == 'grs') {
       decoded = wifgrs.decode(string)
+    } else if (network.coin.toLowerCase() == 'dcr') {
+      decoded = wifblake.decode(string, undefined, network.wif > 0xff ? 2 : 1)
     } else {
       decoded = wif.decode(string, undefined, network.wif > 0xff ? 2 : 1)
     }
@@ -189,6 +192,10 @@ ECPair.prototype.toWIF = function () {
 
   if (this.network.coin.toLowerCase() == 'grs') {
     return wifgrs.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
+  }
+
+  if (this.network.coin.toLowerCase() == 'dcr') {
+    return wifblake.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
   }
 
   return wif.encode(this.network.wif, this.d.toBuffer(32), this.compressed)
