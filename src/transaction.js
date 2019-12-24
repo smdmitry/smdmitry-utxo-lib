@@ -1256,4 +1256,34 @@ Transaction.prototype.hashForMessageSignature = function (message) {
     return this.network.hashFunctions.transaction(buf);
 }
 
+Transaction.prototype.toJSON = function () {
+    let json = {};
+
+    json.version = this.version;
+    json.datetime = this.datetime;
+    json.locktime = this.locktime;
+    json.inputs = [];
+
+    for (let i in this.ins) {
+        json.inputs.push({
+            hash: Buffer.from(this.ins[i].hash).reverse().toString('hex'),
+            index: this.ins[i].index,
+            script: Buffer.from(this.ins[i].script).toString('hex'),
+            sequence: this.ins[i].sequence,
+        });
+    }
+    json.outputs = [];
+    for (let i in this.outs) {
+        let value = this.outs[i].valueBuffer ? Buffer.from(this.outs[i].valueBuffer).toString('hex') : this.outs[i].value;
+        json.outputs.push({
+            value: value,
+            script: Buffer.from(this.outs[i].script).toString('hex'),
+            attachment: this.outs[i].attachment,
+            attachmentBytes: Buffer.from(this.outs[i].attachmentBytes).toString('hex'),
+        });
+    }
+
+    return json;
+}
+
 module.exports = Transaction
