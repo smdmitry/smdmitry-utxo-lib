@@ -9,6 +9,7 @@ const coins = {
   LTC: 'ltc',
   PPC: 'ppc',
   ZEC: 'zec',
+  KMD: 'kmd',
   DASH: 'dash',
   LBTC: 'lbtc',
   GRS: 'grs',
