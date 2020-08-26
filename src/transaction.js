@@ -1260,7 +1260,9 @@ Transaction.prototype.toJSON = function () {
     let json = {};
 
     json.version = this.version;
-    json.datetime = this.datetime;
+    if (this.datetime) {
+        json.datetime = this.datetime;
+    }
     json.locktime = this.locktime;
     json.inputs = [];
 
@@ -1275,12 +1277,15 @@ Transaction.prototype.toJSON = function () {
     json.outputs = [];
     for (let i in this.outs) {
         let value = this.outs[i].valueBuffer ? Buffer.from(this.outs[i].valueBuffer).toString('hex') : this.outs[i].value;
-        json.outputs.push({
+        let output = {
             value: value,
             script: Buffer.from(this.outs[i].script).toString('hex'),
-            attachment: this.outs[i].attachment,
-            attachmentBytes: Buffer.from(this.outs[i].attachmentBytes).toString('hex'),
-        });
+        };
+        if (this.outs[i].attachment && this.outs[i].attachmentBytes) {
+            output.attachment = this.outs[i].attachment;
+            output.attachmentBytes = Buffer.from(this.outs[i].attachmentBytes).toString('hex');
+        }
+        json.outputs.push(output);
     }
 
     return json;
