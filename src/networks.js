@@ -134,6 +134,25 @@ module.exports = {
     coin: coins.KMD,
     hashFunctions: hashFunctions
   },
+  komodo_non_sapling: {
+    messagePrefix: '\x18ZCash Signed Message:\n',
+    bech32: 'bc',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 0x3c,
+    scriptHash: 0x05,
+    wif: 0xbc,
+    consensusBranchId: {
+      1: 0x00,
+      2: 0x00,
+      3: 0x5ba81b19,
+      4: 0x2bb40e60
+    },
+    coin: coins.KMD,
+    hashFunctions: hashFunctions
+  },
   chips: {
     messagePrefix: '\x18Chips Signed Message:\n',
     bech32: 'bc',
@@ -147,7 +166,7 @@ module.exports = {
     coin: coins.BTC,
     hashFunctions: hashFunctions
   },
-  aryacoin: {
+  arya: {
     messagePrefix: '\x18Arya Signed Message:\n',
     bech32: 'bc',
     bip32: {
@@ -157,6 +176,19 @@ module.exports = {
     pubKeyHash: 0x17,
     scriptHash: 0x05,
     wif: 0xb0,
+    coin: coins.BTC,
+    hashFunctions: hashFunctions
+  },
+  gleecbtc: {
+    messagePrefix: '\x18GleecBTC Signed Message:\n',
+    bech32: 'bc',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 0x23,
+    scriptHash: 0x26,
+    wif: 0x41,
     coin: coins.BTC,
     hashFunctions: hashFunctions
   },
