@@ -26,13 +26,13 @@ Originally a fork of [bitcoinjs-lib](https://github.com/BitGo/bitcoinjs-lib); we
 
 ## Installation
 ``` bash
-npm install https://github.com/magnumwallet/mw-bitgo-utxo-lib
+npm install https://github.com/smdmitry/smdmitry-utxo-lib
 ```
 
 ## Setup
 ### Node.js
 ``` javascript
-var bitGoUTXO = require('mw-bitgo-utxo-lib')
+var bitGoUTXO = require('smdmitry-utxo-lib')
 ```
 
 ### Browser
@@ -43,7 +43,7 @@ These steps are advisory only,  and may not be suitable for your application.
 
 For your project, create an `index.js` file
 ``` javascript
-let bitGoUTXO = require('mw-bitgo-utxo-lib')
+let bitGoUTXO = require('smdmitry-utxo-lib')
 
 // your code here
 function myFunction () {

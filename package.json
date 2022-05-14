@@ -1,5 +1,5 @@
 {
-  "name": "mw-bitgo-utxo-lib",
+  "name": "smdmitry-utxo-lib",
   "version": "1.7.0",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./src/index.js",
@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/magnumwallet/mw-bitgo-utxo-lib.git"
+    "url": "https://github.com/smdmitry/smdmitry-utxo-lib.git"
   },
   "files": [
     "src"
