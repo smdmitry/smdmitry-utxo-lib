@@ -192,6 +192,32 @@ module.exports = {
     coin: coins.BTC,
     hashFunctions: hashFunctions
   },
+  mil: {
+    messagePrefix: '\x18MIL Signed Message:\n',
+    bech32: 'bc',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 50,
+    scriptHash: 196,
+    wif: 239,
+    coin: coins.BTC,
+    hashFunctions: hashFunctions
+  },
+  smartusd: {
+    messagePrefix: '\x18SmartUSD Signed Message:\n',
+    bech32: 'bc',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 0x3F,
+    scriptHash: 0x55,
+    wif: 0xBC,
+    coin: coins.BTC,
+    hashFunctions: hashFunctions
+  },
   einsteinium: {
     messagePrefix: '\x18Einsteinium Signed Message:\n',
     bech32: 'bc',

@@ -45,7 +45,7 @@ coins.isZcash = function (network) {
 }
 
 coins.isLightningBitcoinLBTC = function (network) {
-    return typeforce.value(coins.LBTC)(network.coin)
+  return typeforce.value(coins.LBTC)(network.coin)
 }
 
 coins.isZKSnark = function (network) {
@@ -61,7 +61,7 @@ coins.hasExtraPayload = function (network) {
 }
 
 coins.hasTxBlockhash = function (network) {
-    return network.txblockhash;
+  return network.txblockhash;
 }
 
 coins.isGroestlcoin = function (network) {
@@ -69,7 +69,7 @@ coins.isGroestlcoin = function (network) {
 }
 
 coins.isETPNetwork = function (network) {
-    return typeforce.value(coins.ETP)(network.coin)
+  return typeforce.value(coins.ETP)(network.coin)
 }
 
 coins.isValidCoin = typeforce.oneOf(

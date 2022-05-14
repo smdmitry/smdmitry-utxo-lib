@@ -8,7 +8,6 @@ var typeforce = require('typeforce')
 var types = require('./types')
 var bs58checkBase = require('bs58check/base')
 var multichain = require('./multichain')
-var bcrypto = require('./crypto')
 
 function fromBase58Check (address, network) {
   network = network || networks.bitcoin
@@ -70,10 +69,6 @@ function toBech32 (data, version, prefix) {
 function fromOutputScript (outputScript, network) {
   network = network || networks.bitcoin
 
-  if (btemplates.pubKey.output.check(outputScript)) {
-    let hashFunc = network.hashFunctions.address_hash160 ? network.hashFunctions.address_hash160 : bcrypto.hash160
-    return toBase58Check(hashFunc(bscript.decompile(outputScript)[0]), network.pubKeyHash, network)
-  }
   if (btemplates.pubKeyHash.output.check(outputScript)) return toBase58Check(bscript.compile(outputScript).slice(3, 23), network.pubKeyHash, network)
   if (btemplates.scriptHash.output.check(outputScript)) return toBase58Check(bscript.compile(outputScript).slice(2, 22), network.scriptHash, network)
   if (btemplates.witnessPubKeyHash.output.check(outputScript)) return toBech32(bscript.compile(outputScript).slice(2, 22), 0, network.bech32)
