@@ -53,7 +53,8 @@
     "typeforce": "^1.11.3",
     "varuint-bitcoin": "^1.0.4",
     "wif": "git+https://github.com/magnumwallet/wif.git",
-    "wifgrs": "git+https://github.com/Groestlcoin/wifgrs.git"
+    "wifgrs": "git+https://github.com/Groestlcoin/wifgrs.git",
+    "blake-hash": "^2.0.0"
   },
   "devDependencies": {
     "bip39": "^2.3.0",
